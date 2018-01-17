@@ -1,6 +1,7 @@
 package growthcraft.core.blocks;
 
 import growthcraft.core.Reference;
+import growthcraft.core.common.block.IBlockRope;
 import growthcraft.core.init.GrowthcraftCoreItems;
 import growthcraft.core.tileentity.TileEntityRopeKnot;
 import growthcraft.grapes.blocks.BlockGrapeVineBush;
@@ -9,7 +10,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
 
-public class BlockRopeKnot extends Block implements ITileEntityProvider {
+public class BlockRopeKnot extends Block implements ITileEntityProvider, IBlockRope {
 
     private static final AxisAlignedBB KNOT_BOUNDING_BOX = new AxisAlignedBB(0.0625 * 5, 0.0625 * 6, 0.0625 * 5, 0.0625 * 11, 0.0625 * 14, 0.0625 * 11);
     private static final AxisAlignedBB NORTH_BOUNDING_BOX = new AxisAlignedBB(0.0625 * 5, 0.0625 * 6, 0.0625 * 5, 0.0625 * 11, 0.0625 * 14, 0.0625 * 11);
@@ -111,7 +111,7 @@ public class BlockRopeKnot extends Block implements ITileEntityProvider {
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
         // Always return a rope when broken
-        ItemStack rope = new ItemStack(GrowthcraftCoreItems.rope, 1);
+        ItemStack rope = GrowthcraftCoreItems.rope.asStack(1);
         InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), rope);
 
         if(!this.wasActivated) {
@@ -149,21 +149,17 @@ public class BlockRopeKnot extends Block implements ITileEntityProvider {
      * @param facing Requesting Side
      * @return
      */
-    private boolean canConnectRopeTo(IBlockAccess world, BlockPos pos, EnumFacing facing) {
+    @Override
+    public boolean canConnectRopeTo(IBlockAccess world, BlockPos pos, EnumFacing facing) {
         Block block = world.getBlockState(pos.offset(facing)).getBlock();
-        if ( block instanceof BlockRopeFence || block instanceof BlockRopeKnot || block instanceof BlockGrapeVineBush || block instanceof BlockHopsBush) {
-            return true;
-        }
-        return false ;
+        // return block instanceof BlockRopeFence || block instanceof BlockRopeKnot || block instanceof BlockGrapeVineBush || block instanceof BlockHopsBush;
+        return block instanceof IBlockRope;
     }
 
     @Override
     public boolean canBeConnectedTo(IBlockAccess world, BlockPos pos, EnumFacing facing) {
         Block block = world.getBlockState(pos.offset(facing)).getBlock();
-        if ( block instanceof BlockRopeFence || block instanceof BlockRopeKnot) {
-            return true;
-        }
-        return false ;
+        return block instanceof BlockRopeFence || block instanceof BlockRopeKnot;
     }
 
     @Override
@@ -178,7 +174,7 @@ public class BlockRopeKnot extends Block implements ITileEntityProvider {
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, new IProperty[] { NORTH, EAST, SOUTH, WEST, UP, DOWN } );
+        return new BlockStateContainer(this, NORTH, EAST, SOUTH, WEST, UP, DOWN);
     }
 
     @Override

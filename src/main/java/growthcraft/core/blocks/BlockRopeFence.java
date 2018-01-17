@@ -1,12 +1,12 @@
 package growthcraft.core.blocks;
 
 import growthcraft.core.Reference;
+import growthcraft.core.common.block.IBlockRope;
 import growthcraft.core.init.GrowthcraftCoreItems;
 import growthcraft.grapes.blocks.BlockGrapeVineBush;
 import growthcraft.hops.blocks.BlockHopsBush;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -21,7 +21,7 @@ import net.minecraft.world.World;
 
 import java.util.Random;
 
-public class BlockRopeFence extends Block {
+public class BlockRopeFence extends Block implements IBlockRope {
 
     private static final AxisAlignedBB KNOT_BOUNDING_BOX = new AxisAlignedBB(0.0625 * 7, 0.0625 * 7, 0.0625 * 7, 0.0625 * 9, 0.0625 * 9, 0.0625 * 9);
 
@@ -60,7 +60,7 @@ public class BlockRopeFence extends Block {
     public void onBlockDestroyedByPlayer(World worldIn, BlockPos pos, IBlockState state) {
         // Always return a rope when broken
         if ( !worldIn.isRemote) {
-            ItemStack rope = new ItemStack(GrowthcraftCoreItems.rope, 1);
+            ItemStack rope = GrowthcraftCoreItems.rope.asStack(1);
             InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), rope);
         }
     }
@@ -85,21 +85,18 @@ public class BlockRopeFence extends Block {
         return super.canPlaceBlockOnSide(worldIn, pos, side);
     }
 
-    private boolean canConnectRopeTo(IBlockAccess world, BlockPos pos, EnumFacing facing) {
+    @Override
+    public boolean canConnectRopeTo(IBlockAccess world, BlockPos pos, EnumFacing facing) {
         Block block = world.getBlockState(pos.offset(facing)).getBlock();
-        if ( block instanceof BlockRopeFence || block instanceof BlockRopeKnot || block instanceof BlockGrapeVineBush  || BlockHopsBush.class.isInstance(block)) {
-            return true;
-        }
-        return false ;
+//        return block instanceof BlockRopeFence || block instanceof BlockRopeKnot || block instanceof BlockGrapeVineBush || BlockHopsBush.class.isInstance(block);
+        return block instanceof IBlockRope;
+        
     }
 
     @Override
     public boolean canBeConnectedTo(IBlockAccess world, BlockPos pos, EnumFacing facing) {
         Block block = world.getBlockState(pos).getBlock();
-        if ( BlockRopeFence.class.isInstance(block)) {
-            return true;
-        }
-        return false ;
+        return BlockRopeFence.class.isInstance(block);
     }
 
     @Override
@@ -114,7 +111,7 @@ public class BlockRopeFence extends Block {
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, new IProperty[] { NORTH, EAST, SOUTH, WEST, UP, DOWN } );
+        return new BlockStateContainer(this, NORTH, EAST, SOUTH, WEST, UP, DOWN);
     }
 
     @Override
